@@ -7,6 +7,7 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,6 +17,8 @@ public class DuoApi {
 
 	private String username;
 	private String password;
+
+	private JsonObject userData;
 
 	private String userUrl="http://duolingo.com/users/%s";
 
@@ -51,6 +54,37 @@ public class DuoApi {
 		return false;
 	}
 
+
+	private void switchLanguage(String languageAbbr){
+		Map<String,String> data = new HashMap<String, String>();
+		data.put("learning_language",languageAbbr);
+		String url="https://www.duolingo.com/switch_language";
+
+		JsonObject res = makeRequest(url,data);
+		try {
+			JsonObject trackingProperties = res.getAsJsonObject("tracking_properties");
+			if (trackingProperties.get("learning_language").getAsString().equals(languageAbbr)) {
+				this.userData = res;
+			}
+		}
+		catch (Exception e){
+			throw new RuntimeException("Failed to switch language");
+		}
+	}
+
+	public JsonObject getUserData(){
+		return makeRequest(userUrl,null);
+	}
+
+	private Map<String,String> getDict(List<String> keys, JsonObject object){
+		//TODO Code this
+		return null;
+	}
+
+	public Map<String, String> getUserSettings(){
+		//TODO Complete the getDict method
+		return null;
+	}
 
 	/*
 	No longer supported by Duolingo

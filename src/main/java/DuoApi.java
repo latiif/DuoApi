@@ -200,4 +200,8 @@ public class DuoApi {
 				"admin", "invites_left", "location", "fullname", "avatar",
 				"ui_language"}),userData);
 	}
+
+	public Map<String,String> getStreakInfo(){
+		return getDict(Arrays.asList(new String[]{"daily_goal", "site_streak", "streak_extended_today"}),userData);
+	}
 }

@@ -99,7 +99,13 @@ public class DuoApi {
 
 		for (String key : keys){
 			if (object.get(key)!=null){
-				res.put(key,object.get(key).getAsString());
+				try {
+					res.put(key,object.get(key).getAsString());
+				}
+				catch (Exception e){
+					continue;
+				}
+
 			}
 		}
 
@@ -178,4 +184,20 @@ public class DuoApi {
 		return "";
 	}
 
+	public JsonObject getLanguageDetails(String language){
+		for (JsonElement element:userData.getAsJsonArray("languages")){
+			if (element.getAsJsonObject().get("language_string").getAsString().toLowerCase().equals(language.toLowerCase())){
+				return element.getAsJsonObject();
+			}
+		}
+		return new JsonObject();
+	}
+
+	public Map<String, String> getUserInfo(){
+		return getDict(Arrays.asList(new String[]{"username", "bio", "id", "num_following", "cohort",
+				"language_data", "num_followers", "learning_language_string",
+				"created", "contribution_points", "gplus_id", "twitter_id",
+				"admin", "invites_left", "location", "fullname", "avatar",
+				"ui_language"}),userData);
+	}
 }

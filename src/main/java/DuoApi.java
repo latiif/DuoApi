@@ -1,4 +1,5 @@
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.istack.internal.Nullable;
@@ -6,10 +7,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by latiif on 7/20/17.
@@ -29,12 +27,28 @@ public class DuoApi {
 
 		userUrl=String.format(userUrl,username);
 		userData=getUserData();
-		
+
 		if (password!=null){
 			login();
 		}
 	}
 
+
+	public List<String> getLanguages(boolean inAbbr){
+		List<String> res= new ArrayList<String>();
+
+		for (JsonElement element:userData.getAsJsonArray("languages")){
+			if (element.getAsJsonObject().get("learning").getAsBoolean()){
+				if (inAbbr){
+					res.add(element.getAsJsonObject().get("language").getAsString());
+				}else {
+					res.add(element.getAsJsonObject().get("language_string").getAsString());
+				}
+			}
+		}
+
+		return res;
+	}
 
 	public boolean login(){
 		String loginUrl="https://www.duolingo.com/login";

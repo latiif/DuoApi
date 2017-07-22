@@ -6,6 +6,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,8 @@ public class DuoApi {
 		this.password=password;
 
 		userUrl=String.format(userUrl,username);
-
+		userData=getUserData();
+		
 		if (password!=null){
 			login();
 		}
@@ -77,13 +79,21 @@ public class DuoApi {
 	}
 
 	private Map<String,String> getDict(List<String> keys, JsonObject object){
-		//TODO Code this
-		return null;
+
+
+		Map<String,String> res= new HashMap<String, String>();
+
+		for (String key : keys){
+			if (object.get(key)!=null){
+				res.put(key,object.get(key).getAsString());
+			}
+		}
+
+		return res;
 	}
 
 	public Map<String, String> getUserSettings(){
-		//TODO Complete the getDict method
-		return null;
+		return getDict(Arrays.asList(new String[]{"notify_comment","deactivated","is_following"}),userData);
 	}
 
 	/*
@@ -128,5 +138,9 @@ public class DuoApi {
 		return null;
 	}
 
+
+	private void getData(){
+		this.userData=makeRequest(this.userUrl,null);
+	}
 
 }

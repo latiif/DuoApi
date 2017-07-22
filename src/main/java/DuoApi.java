@@ -157,4 +157,25 @@ public class DuoApi {
 		this.userData=makeRequest(this.userUrl,null);
 	}
 
+	public String getLanguageFromAbbreviataion(String abbr){
+		for (JsonElement element:userData.getAsJsonArray("languages")){
+			if (element.getAsJsonObject().get("language").getAsString().equals(abbr)){
+				return element.getAsJsonObject().get("language_string").getAsString();
+			}
+
+		}
+		return "";
+	}
+
+	public String getAbbrOfLanguage(String language){
+		language=language.toLowerCase();
+		for (JsonElement element:userData.getAsJsonArray("languages")){
+			if (element.getAsJsonObject().get("language_string").getAsString().toLowerCase().equals(language)){
+				return element.getAsJsonObject().get("language").getAsString();
+			}
+
+		}
+		return "";
+	}
+
 }

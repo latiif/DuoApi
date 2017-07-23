@@ -1,4 +1,5 @@
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -82,7 +83,7 @@ public class DuoApi {
 		try {
 			JsonObject trackingProperties = res.getAsJsonObject("tracking_properties");
 			if (trackingProperties.get("learning_language").getAsString().equals(languageAbbr)) {
-				this.userData = res;
+				getData();
 			}
 		}
 		catch (Exception e){
@@ -115,7 +116,7 @@ public class DuoApi {
 	}
 
 	public Map<String, String> getUserSettings(){
-		return getDict(Arrays.asList(new String[]{"notify_comment","deactivated","is_following"}),userData);
+		return getDict(Arrays.asList("notify_comment","deactivated","is_following"),userData);
 	}
 
 	/*
@@ -200,29 +201,84 @@ public class DuoApi {
 	}
 
 	public Map<String, String> getUserInfo(){
-		return getDict(Arrays.asList(new String[]{"username", "bio", "id", "num_following", "cohort",
+		return getDict(Arrays.asList("username", "bio", "id", "num_following", "cohort",
 				"language_data", "num_followers", "learning_language_string",
 				"created", "contribution_points", "gplus_id", "twitter_id",
 				"admin", "invites_left", "location", "fullname", "avatar",
-				"ui_language"}),userData);
+				"ui_language"),userData);
 	}
 
 	public Map<String,String> getStreakInfo(){
-		return getDict(Arrays.asList(new String[]{"daily_goal", "site_streak", "streak_extended_today"}),userData);
+		return getDict(Arrays.asList("daily_goal", "site_streak", "streak_extended_today"),userData);
 	}
 
 	public boolean isCurrentLanguage(String abbr){
-		JsonObject language_data = userData.get("language_data").getAsJsonObject();
-		return language_data.keySet().contains(abbr);
+		return getCurrentLanguage().toLowerCase().equals(abbr.toLowerCase());
+	}
+
+	public String getCurrentLanguage(){
+
+		return
+			String.valueOf(userData.get("language_data").getAsJsonObject().keySet().toArray()[0]);
+
 	}
 
 	public Map<String,String> getLanguageProgress(String abbr){
 		if (!isCurrentLanguage(abbr)){
 			switchLanguage(abbr);
 		}
-		return getDict(Arrays.asList(new String[]{"streak", "language_string", "level_progress",
+		return getDict(Arrays.asList("streak", "language_string", "level_progress",
 				"num_skills_learned", "level_percent", "level_points",
 				"points_rank", "next_level", "level_left", "language",
-				"points", "fluency_score", "level"}),userData);
+				"points", "fluency_score", "level"),userData);
+	}
+
+	public List<Map<String,String>> getFriends(){
+
+		JsonArray points_ranking_data = userData.get("language_data").getAsJsonObject().get(getCurrentLanguage()).getAsJsonObject().get("points_ranking_data").getAsJsonArray();
+
+		List<Map<String,String>> res = new LinkedList<Map<String, String>>();
+
+		for (JsonElement element:points_ranking_data){
+			res.add(getDict(Arrays.asList("username","fullname","avatar","id","rank"),element.getAsJsonObject()));
+			res.get(res.size()-1).putAll(getDict(Arrays.asList("total"),element.getAsJsonObject().get("points_data").getAsJsonObject()));
+		}
+
+		return res;
+	}
+
+
+	public List<String> getKnownWords(){
+		List<String> res= new ArrayList<String>();
+
+		String currLang=getCurrentLanguage();
+		JsonArray skills= new JsonArray();
+		try {
+			 skills = userData.get("language_data").getAsJsonObject().get(currLang).getAsJsonObject().get("skills").getAsJsonArray();
+		}
+		catch (Exception e){
+			System.out.println(currLang);
+		}
+
+		for (JsonElement element:skills){
+			if (!element.getAsJsonObject().get("learned").getAsBoolean()){
+				continue;
+			}
+			JsonArray words = element.getAsJsonObject().get("words").getAsJsonArray();
+
+			for (JsonElement word:words) {
+				res.add(word.getAsString());
+			}
+		}
+
+		return res;
+	}
+
+	public List<String> getKnownWords(String abbr){
+		if (isCurrentLanguage(abbr)){
+			return getKnownWords();
+		}
+		switchLanguage(abbr);
+		return getKnownWords();
 	}
 }

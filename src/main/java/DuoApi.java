@@ -3,6 +3,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.istack.internal.Nullable;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -16,6 +17,7 @@ public class DuoApi {
 
 	private String username;
 	private String password;
+	private Map<String,String> cookies = new HashMap<String, String>();
 
 	private JsonObject userData;
 
@@ -145,10 +147,14 @@ public class DuoApi {
 		JsonObject object;
 		try {
 			if (data!=null) {
-				object=parser.parse(Jsoup.connect(url).data(data).userAgent("mozilla").ignoreContentType(true).post().body().text()).getAsJsonObject();
+				Connection connection= Jsoup.connect(url).data(data).cookies(cookies).userAgent("mozilla").ignoreContentType(true);
+				Connection.Response response = connection.execute();
+				cookies=response.cookies();
+
+				object=parser.parse(connection.post().body().text()).getAsJsonObject();
 			}
 			else {
-			object = parser.parse(Jsoup.connect(url).ignoreContentType(true).execute().body()).getAsJsonObject();
+			object = parser.parse(Jsoup.connect(url).ignoreContentType(true).cookies(cookies).execute().body()).getAsJsonObject();
 			}
 			return object;
 		} catch (IOException e) {
@@ -203,5 +209,20 @@ public class DuoApi {
 
 	public Map<String,String> getStreakInfo(){
 		return getDict(Arrays.asList(new String[]{"daily_goal", "site_streak", "streak_extended_today"}),userData);
+	}
+
+	public boolean isCurrentLanguage(String abbr){
+		JsonObject language_data = userData.get("language_data").getAsJsonObject();
+		return language_data.keySet().contains(abbr);
+	}
+
+	public Map<String,String> getLanguageProgress(String abbr){
+		if (!isCurrentLanguage(abbr)){
+			switchLanguage(abbr);
+		}
+		return getDict(Arrays.asList(new String[]{"streak", "language_string", "level_progress",
+				"num_skills_learned", "level_percent", "level_points",
+				"points_rank", "next_level", "level_left", "language",
+				"points", "fluency_score", "level"}),userData);
 	}
 }

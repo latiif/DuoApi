@@ -281,4 +281,22 @@ public class DuoApi {
 		switchLanguage(abbr);
 		return getKnownWords();
 	}
+
+
+	/**
+	 * @return the learned skill objects sorted by the order they were learned
+	 */
+	public List<Map<String,String>> getLearnedSkills(){
+		List<Map<String,String>> res= new LinkedList<Map<String, String>>();
+		JsonArray skills = userData.get("language_data").getAsJsonObject().get(getCurrentLanguage()).getAsJsonObject().get("skills").getAsJsonArray();
+
+		for (JsonElement skill :skills){
+			if (!skill.getAsJsonObject().get("learned").getAsBoolean()){
+				continue;
+			}
+			res.add(getDict(Arrays.asList("language_string","practice_recommended","disabled","test_count","more_lessons","missing_lessons","progress_percent","id","description","num_lessons","language","strength","beginner","title","url-title","lesson_number","learned","bonus","explanation","num_lexemes","num_missing","left_lessons","short","locked","name","has_explanation","mastered"),skill.getAsJsonObject()));
+		}
+		return res;
+	}
+
 }

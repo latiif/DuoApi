@@ -325,4 +325,67 @@ public class DuoApi {
 		}
 		return res;
 	}
+
+	public List<String> getUnknownTopics(){
+		List<String> res = new ArrayList<String>();
+		JsonArray skills = userData.get("language_data").getAsJsonObject().get(getCurrentLanguage()).getAsJsonObject().get("skills").getAsJsonArray();
+		for(JsonElement skill:skills){
+			if (skill.getAsJsonObject().get("learned").getAsBoolean()){
+				continue;
+			}
+			res.add(skill.getAsJsonObject().get("title").getAsString());
+		}
+		return res;
+	}
+
+	public List<String> getUnknownTopics(String abbr){
+		if (!isCurrentLanguage(abbr)){
+			switchLanguage(abbr);
+		}
+		return getUnknownTopics();
+	}
+
+	public List<String> getGoldenTopics(){
+		List<String> res = new ArrayList<String>();
+		JsonArray skills = userData.get("language_data").getAsJsonObject().get(getCurrentLanguage()).getAsJsonObject().get("skills").getAsJsonArray();
+		for(JsonElement skill:skills){
+			if (!skill.getAsJsonObject().get("learned").getAsBoolean()){
+				continue;
+			}
+			if (skill.getAsJsonObject().get("strength").getAsDouble()!=1.0){
+				continue;
+			}
+			res.add(skill.getAsJsonObject().get("title").getAsString());
+		}
+		return res;
+	}
+
+	public List<String> getGoldenTopics(String abbr){
+		if (!isCurrentLanguage(abbr)){
+			switchLanguage(abbr);
+		}
+		return getGoldenTopics();
+	}
+
+	public List<String> getReviewableTopics(){
+		List<String> res = new ArrayList<String>();
+		JsonArray skills = userData.get("language_data").getAsJsonObject().get(getCurrentLanguage()).getAsJsonObject().get("skills").getAsJsonArray();
+		for(JsonElement skill:skills){
+			if (!skill.getAsJsonObject().get("learned").getAsBoolean()){
+				continue;
+			}
+			if (skill.getAsJsonObject().get("strength").getAsDouble()==1.0){
+				continue;
+			}
+			res.add(skill.getAsJsonObject().get("title").getAsString());
+		}
+		return res;
+	}
+
+	public List<String> getReviewableTopics(String abbr){
+		if (!isCurrentLanguage(abbr)){
+			switchLanguage(abbr);
+		}
+		return getReviewableTopics();
+	}
 }

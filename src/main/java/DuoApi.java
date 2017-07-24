@@ -299,4 +299,30 @@ public class DuoApi {
 		return res;
 	}
 
+	public List<Map<String,String>> getLearnedSkills(String abbr){
+		if (!isCurrentLanguage(abbr)){
+			switchLanguage(abbr);
+		}
+		return getLearnedSkills();
+	}
+
+
+	public List<String> getKnownTopics(String abbr){
+		if (!isCurrentLanguage(abbr)){
+			switchLanguage(abbr);
+		}
+		return getKnownTopics();
+	}
+
+	public List<String> getKnownTopics(){
+		List<String> res = new ArrayList<String>();
+		JsonArray skills = userData.get("language_data").getAsJsonObject().get(getCurrentLanguage()).getAsJsonObject().get("skills").getAsJsonArray();
+		for(JsonElement skill:skills){
+			if (!skill.getAsJsonObject().get("learned").getAsBoolean()){
+				continue;
+			}
+			res.add(skill.getAsJsonObject().get("title").getAsString());
+		}
+		return res;
+	}
 }

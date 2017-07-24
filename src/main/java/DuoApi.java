@@ -388,4 +388,44 @@ public class DuoApi {
 		}
 		return getReviewableTopics();
 	}
+
+	/**
+	 * Get translations from https://d2.duolingo.com/api/1/dictionary/hints/<source>/<target>?tokens=``<words>``
+	 * @param words A single word or a list
+	 * @param from Source language as abbreviation
+	 * @param to Destination language as abbreviation
+	 * @return Dict with words as keys and translations as values
+	 */
+	public Map<String,List<String>> getTranslations(List<String> words,String from,String to){
+		Map<String,List<String>> res= new HashMap<String, List<String>>();
+
+		if (from==null){
+			from=getCurrentLanguage();
+		}
+
+		String url = "https://d2.duolingo.com/api/1/dictionary/hints/%1$s/%2$s?tokens=%3$s";
+		url = String.format(url, from,to,getListFormatted(words));
+
+		JsonObject resp = makeRequest(url,null);
+
+		for (String word:words){
+			List<String> translations= new ArrayList<String>();
+			JsonArray jsonTranslations = resp.get(word).getAsJsonArray();
+			for (JsonElement element:jsonTranslations){
+				translations.add(element.getAsString());
+			}
+
+			res.put(word,translations);
+		}
+		return res;
+	}
+
+	private String getListFormatted(List<String> list){
+		List<String> res = new ArrayList<String>();
+		for (String word:list){
+			res.add("\""+word+"\"");
+		}
+
+		return Arrays.toString(res.toArray());
+	}
 }

@@ -18,6 +18,8 @@ public class DuoApi {
 
 	private String username;
 	private String password;
+	private String word_url_template="%stts/%s/token/%s";
+
 	private Map<String,String> cookies = new HashMap<String, String>();
 
 	private JsonObject userData;
@@ -74,7 +76,7 @@ public class DuoApi {
 	}
 
 
-	private void switchLanguage(String languageAbbr){
+	public void switchLanguage(String languageAbbr){
 		Map<String,String> data = new HashMap<String, String>();
 		data.put("learning_language",languageAbbr);
 		String url="https://www.duolingo.com/switch_language";
@@ -420,6 +422,7 @@ public class DuoApi {
 		return res;
 	}
 
+
 	private String getListFormatted(List<String> list){
 		List<String> res = new ArrayList<String>();
 		for (String word:list){
@@ -427,5 +430,26 @@ public class DuoApi {
 		}
 
 		return Arrays.toString(res.toArray());
+	}
+
+
+
+
+	public String getWordAudio(String word,String abbr){
+		if (!isCurrentLanguage(abbr)){
+			switchLanguage(abbr);
+		}
+
+		return getWordAudio(word);
+	}
+
+	public String getWordAudio(String word){
+		String res;
+
+		String tts_root = getDict(Arrays.asList("tts_base_url"),userData).get("tts_base_url");
+
+		res=String.format(word_url_template,tts_root,getCurrentLanguage(),word);
+
+		return res;
 	}
 }

@@ -150,17 +150,20 @@ public class DuoApi {
 		JsonObject object;
 		try {
 			if (data!=null) {
-				Connection connection= Jsoup.connect(url).data(data).cookies(cookies).userAgent("mozilla").ignoreContentType(true);
+				Connection connection= Jsoup.connect(url).data(data).cookies(cookies).userAgent("chrome").ignoreContentType(true);
+
+				object=parser.parse(connection.post().body().text()).getAsJsonObject();
+
 				Connection.Response response = connection.execute();
 				cookies=response.cookies();
 
-				object=parser.parse(connection.post().body().text()).getAsJsonObject();
 			}
 			else {
 			object = parser.parse(Jsoup.connect(url).ignoreContentType(true).cookies(cookies).execute().body()).getAsJsonObject();
 			}
 			return object;
-		} catch (IOException e) {
+		} catch (Exception e) {
+
 			e.printStackTrace();
 		}
 

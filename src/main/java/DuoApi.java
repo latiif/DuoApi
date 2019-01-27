@@ -527,4 +527,18 @@ public class DuoApi {
 
         return res;
     }
+
+
+    /**
+     * @param abbrFrom abbreviation of target language
+     * @param abbrTo abbreviation of the language of the course
+     * @return dictionary of a word and a list of its translations
+     */
+    public Map<String,List<String>> getDictionaryOfKnownWords(String abbrFrom, String abbrTo){
+        Map<String,List<String>> res =
+                getTranslations(getKnownWords(abbrTo),abbrTo,abbrFrom);
+
+        return res;
+    }
+
 }

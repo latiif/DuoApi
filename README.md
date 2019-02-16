@@ -1,14 +1,14 @@
-# DuoApi
+# com.latiif.duoapi.DuoApi
 Unofficial Java API for Duolingo
 
 
 #### Documentation
 
-##### `public class DuoApi`
+##### `public class com.latiif.duoapi.DuoApi`
 
 Created by Latiif on 7/20/17.
 
-##### `public DuoApi(String username, String password)`
+##### `public com.latiif.duoapi.DuoApi(String username, String password)`
 
 Initializes the class for further functionality sanctioned by auth cookies
 

@@ -1,3 +1,4 @@
+package com.latiif.duoapi;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -21,6 +22,8 @@ public class DuoApi {
     private String password;
     private String word_url_template = "%stts/%s/token/%s";
 
+    private Boolean isLoggedIn;
+
     private Map<String, String> cookies = new HashMap<String, String>();
 
     private JsonObject userData;
@@ -41,10 +44,14 @@ public class DuoApi {
         userData = getUserData();
 
         if (password != null) {
-            login();
+            isLoggedIn = login();
         }
     }
 
+
+    public boolean getIsLoggedIn() {
+        return isLoggedIn;
+    }
 
     /**
      * Retrieves a list of languages being learned by the user
@@ -124,7 +131,8 @@ public class DuoApi {
 
     /**
      * Helper function to retrieve certain key-value pairs from a json object
-     * @param keys the keys to extract
+     *
+     * @param keys   the keys to extract
      * @param object the json object
      * @return a map of key-value pairs successfully extracted from object
      */
@@ -148,6 +156,7 @@ public class DuoApi {
 
     /**
      * Retrieves user account related settings
+     *
      * @return a map of key-value pairs
      */
     public Map<String, String> getUserSettings() {
@@ -178,7 +187,8 @@ public class DuoApi {
 
     /**
      * Helper function to perform POST and GET requests to Duolingo's API
-     * @param url The url to connect to
+     *
+     * @param url  The url to connect to
      * @param data map of key-value pairs to passed to a POST request
      * @return Raw JSON object from the requested URL
      */
@@ -218,6 +228,7 @@ public class DuoApi {
 
     /**
      * Retrieves the full language name from its abbreviation
+     *
      * @param abbr the abbreviation to look up e.g. "EN"
      * @return Full language name, or an empty string
      */
@@ -233,6 +244,7 @@ public class DuoApi {
 
     /**
      * Retrieves the abbreviation from a full language name
+     *
      * @param language full language name, e.g. "English"
      * @return Language abbreviation or an empty string
      */
@@ -249,7 +261,6 @@ public class DuoApi {
 
 
     /**
-     *
      * @param language
      * @return
      */
@@ -485,6 +496,7 @@ public class DuoApi {
 
     /**
      * Formats a list of strings adding quotations
+     *
      * @param list
      * @return A string representing quoted strings in array
      */
@@ -500,6 +512,7 @@ public class DuoApi {
 
     /**
      * Fetches url of word pronunciation
+     *
      * @param word the word to look up
      * @param abbr the language abbreviation
      * @return url of audio clip for the requested word in the requested language
@@ -515,6 +528,7 @@ public class DuoApi {
 
     /**
      * Fetches url of word pronunciation
+     *
      * @param word the word to lookup in the current language of the user
      * @return url of audio clip for the requested word in the current language
      */
@@ -531,12 +545,12 @@ public class DuoApi {
 
     /**
      * @param abbrFrom abbreviation of target language
-     * @param abbrTo abbreviation of the language of the course
+     * @param abbrTo   abbreviation of the language of the course
      * @return dictionary of a word and a list of its translations
      */
-    public Map<String,List<String>> getDictionaryOfKnownWords(String abbrFrom, String abbrTo){
-        Map<String,List<String>> res =
-                getTranslations(getKnownWords(abbrTo),abbrTo,abbrFrom);
+    public Map<String, List<String>> getDictionaryOfKnownWords(String abbrFrom, String abbrTo) {
+        Map<String, List<String>> res =
+                getTranslations(getKnownWords(abbrTo), abbrTo, abbrFrom);
 
         return res;
     }

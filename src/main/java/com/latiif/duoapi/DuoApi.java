@@ -1,21 +1,31 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.latiif.duoapi;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.sun.istack.internal.Nullable;
+import com.google.gson.stream.JsonReader;
+
+import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
-import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Created by latiif on 7/20/17.
+ * @author latiif
  */
-
 public class DuoApi {
 
     private String username;
@@ -28,10 +38,11 @@ public class DuoApi {
 
     private JsonObject userData;
 
-    private String userUrl = "http://duolingo.com/users/%s";
+    private String userUrl = "https://duolingo.com/users/%s";
 
     /**
-     * Initializes the class for further functionality sanctioned by auth cookies
+     * Initializes the class for further functionality sanctioned by auth
+     * cookies
      *
      * @param username username used to sign in to Duolingo
      * @param password password in string format
@@ -41,13 +52,15 @@ public class DuoApi {
         this.password = password;
 
         userUrl = String.format(userUrl, username);
-        userData = getUserData();
+        // userData = getUserData();
+
+        initCookies();
 
         if (password != null) {
-            isLoggedIn = login();
+            isLoggedIn = getData();
+            isLoggedIn = true;
         }
     }
-
 
     public boolean getIsLoggedIn() {
         return isLoggedIn;
@@ -61,17 +74,17 @@ public class DuoApi {
      */
     public List<String> getLanguages(boolean inAbbr) {
         List<String> res = new ArrayList<String>();
-
-        for (JsonElement element : userData.getAsJsonArray("languages")) {
-            if (element.getAsJsonObject().get("learning").getAsBoolean()) {
-                if (inAbbr) {
-                    res.add(element.getAsJsonObject().get("language").getAsString());
-                } else {
-                    res.add(element.getAsJsonObject().get("language_string").getAsString());
+        if (userData != null) {
+            for (JsonElement element : userData.getAsJsonArray("languages")) {
+                if (element.getAsJsonObject().get("learning").getAsBoolean()) {
+                    if (inAbbr) {
+                        res.add(element.getAsJsonObject().get("language").getAsString());
+                    } else {
+                        res.add(element.getAsJsonObject().get("language_string").getAsString());
+                    }
                 }
             }
         }
-
         return res;
     }
 
@@ -99,10 +112,8 @@ public class DuoApi {
         return false;
     }
 
-
     /**
-     * Switches the current course of the user.
-     * Useful for other functionality
+     * Switches the current course of the user. Useful for other functionality
      *
      * @param languageAbbr the abbreviation of the language to switch to
      */
@@ -112,21 +123,28 @@ public class DuoApi {
         String url = "https://www.duolingo.com/switch_language";
 
         JsonObject res = makeRequest(url, data);
-        try {
-            JsonObject trackingProperties = res.getAsJsonObject("tracking_properties");
-            if (trackingProperties.get("learning_language").getAsString().equals(languageAbbr)) {
-                getData();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to switch language");
-        }
+        getData();
     }
 
     /**
      * @return A raw json representation of the user data
      */
     public JsonObject getUserData() {
-        return makeRequest(userUrl, null);
+
+        String raw = "{}";
+
+        try {
+            raw = new String(Jsoup.connect(userUrl).ignoreContentType(true).cookies(cookies).maxBodySize(Integer.MAX_VALUE).method(Connection.Method.GET).execute().body());
+        } catch (Exception ex) {
+            Logger.getLogger(DuoApi.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        Gson gson = new Gson();
+        JsonReader reader = new JsonReader(new StringReader(raw));
+        reader.setLenient(true);
+
+        return gson.fromJson(reader, JsonObject.class);
+
     }
 
     /**
@@ -184,7 +202,6 @@ public class DuoApi {
         return null;
     }
 
-
     /**
      * Helper function to perform POST and GET requests to Duolingo's API
      *
@@ -203,10 +220,11 @@ public class DuoApi {
                 object = parser.parse(connection.post().body().text()).getAsJsonObject();
 
                 Connection.Response response = connection.execute();
-                cookies = response.cookies();
+                //cookies = response.cookies();
 
             } else {
-                object = parser.parse(Jsoup.connect(url).ignoreContentType(true).cookies(cookies).execute().body()).getAsJsonObject();
+                String raw = Jsoup.connect(url).ignoreContentType(true).cookies(cookies).execute().body();
+                object = parser.parse(raw).getAsJsonObject();
             }
             return object;
         } catch (Exception e) {
@@ -217,14 +235,14 @@ public class DuoApi {
         return null;
     }
 
-
     /**
-     * After a successful login, it retrieves the raw data from Duolingo about the current user
+     * After a successful login, it retrieves the raw data from Duolingo about
+     * the current user
      */
-    private void getData() {
-        this.userData = makeRequest(this.userUrl, null);
+    private boolean getData() {
+        this.userData = getUserData();
+        return login();
     }
-
 
     /**
      * Retrieves the full language name from its abbreviation
@@ -259,7 +277,6 @@ public class DuoApi {
         return "";
     }
 
-
     /**
      * @param language
      * @return
@@ -291,8 +308,7 @@ public class DuoApi {
 
     public String getCurrentLanguage() {
 
-        return
-                String.valueOf(userData.get("language_data").getAsJsonObject().keySet().toArray()[0]);
+        return String.valueOf(userData.get("language_data").getAsJsonObject().keySet().toArray()[0]);
 
     }
 
@@ -319,7 +335,6 @@ public class DuoApi {
 
         return res;
     }
-
 
     public List<String> getKnownWords() {
         List<String> res = new ArrayList<String>();
@@ -354,7 +369,6 @@ public class DuoApi {
         return getKnownWords();
     }
 
-
     /**
      * @return the learned skill objects sorted by the order they were learned
      */
@@ -377,7 +391,6 @@ public class DuoApi {
         }
         return getLearnedSkills();
     }
-
 
     public List<String> getKnownTopics(String abbr) {
         if (!isCurrentLanguage(abbr)) {
@@ -462,7 +475,8 @@ public class DuoApi {
     }
 
     /**
-     * Get translations from https://d2.duolingo.com/api/1/dictionary/hints/<source>/<target>?tokens=``<words>``
+     * Get translations from
+     * https://d2.duolingo.com/api/1/dictionary/hints/<source>/<target>?tokens=``<words>``
      *
      * @param words A single word or a list
      * @param from  Source language as abbreviation
@@ -493,7 +507,6 @@ public class DuoApi {
         return res;
     }
 
-
     /**
      * Formats a list of strings adding quotations
      *
@@ -501,21 +514,28 @@ public class DuoApi {
      * @return A string representing quoted strings in array
      */
     private String getListFormatted(List<String> list) {
+        //tmp = "https://d2.duolingo.com/api/1/dictionary/hints/de/en?tokens=[%22trinke%22,%22trinkt%22]";
         List<String> res = new ArrayList<String>();
         for (String word : list) {
-            res.add("\"" + word + "\"");
+            try {
+                res.add("%20%22" + URLEncoder.encode(word, "UTF-8") + "%22");
+            } catch (UnsupportedEncodingException ex) {
+                Logger.getLogger(DuoApi.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-
-        return Arrays.toString(res.toArray());
+        String tmp = Arrays.toString(res.toArray());
+        tmp = tmp.replace("[%20", "[");
+        tmp = tmp.replace(" ", "");
+        return tmp;
     }
-
 
     /**
      * Fetches url of word pronunciation
      *
      * @param word the word to look up
      * @param abbr the language abbreviation
-     * @return url of audio clip for the requested word in the requested language
+     * @return url of audio clip for the requested word in the requested
+     * language
      */
     public String getWordAudio(String word, String abbr) {
         if (!isCurrentLanguage(abbr)) {
@@ -524,7 +544,6 @@ public class DuoApi {
 
         return getWordAudio(word);
     }
-
 
     /**
      * Fetches url of word pronunciation
@@ -542,17 +561,40 @@ public class DuoApi {
         return res;
     }
 
-
     /**
      * @param abbrFrom abbreviation of target language
      * @param abbrTo   abbreviation of the language of the course
      * @return dictionary of a word and a list of its translations
      */
     public Map<String, List<String>> getDictionaryOfKnownWords(String abbrFrom, String abbrTo) {
-        Map<String, List<String>> res =
-                getTranslations(getKnownWords(abbrTo), abbrTo, abbrFrom);
+
+        Map<String, List<String>> res
+                = getTranslations(getKnownWords(abbrTo), abbrTo, abbrFrom);
 
         return res;
     }
 
+    /**
+     * Extracts useful profile information from user
+     *
+     * @return an instnace of DuollingoProfileInfo
+     * @see DuolingoProfileInfo
+     */
+    public DuolingoProfileInfo getProfileInfo() {
+        return new DuolingoProfileInfo(userData);
+    }
+
+
+    private class MyDto {
+
+        Map<String, String> headers;
+        Map<String, String> args;
+        String origin;
+        String url;
+    }
+
+
+    private void initCookies() {
+        cookies.put("jwt_token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjYzMDcyMDAwMDAsImlhdCI6MCwic3ViIjoxODAwOTgyNDl9.6zB727F3HKwXzO3cK2mb8SlKeDYT4XPM2Ot1UZEpY0Y");
+    }
 }

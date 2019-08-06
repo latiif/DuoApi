@@ -18,6 +18,7 @@ import java.net.URLEncoder;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -52,14 +53,17 @@ public class DuoApi {
         this.password = password;
 
         userUrl = String.format(userUrl, username);
-        // userData = getUserData();
-
-        initCookies();
 
         if (password != null) {
             isLoggedIn = getData();
             isLoggedIn = true;
         }
+
+        userData = getUserData();
+
+       // initCookies();
+
+
     }
 
     public boolean getIsLoggedIn() {
@@ -94,9 +98,9 @@ public class DuoApi {
      * @return status of login attempt
      */
     private boolean login() {
-        String loginUrl = "https://www.duolingo.com/login";
+        String loginUrl = "https://www.duolingo.com/2017-06-30/login";
         Map<String, String> data = new HashMap<String, String>();
-        data.put("login", this.username);
+        data.put("identifier", this.username);
         data.put("password", this.password);
         JsonObject res = makeRequest(loginUrl, data);
         try {
@@ -202,6 +206,12 @@ public class DuoApi {
         return null;
     }
 
+
+    private String jsonifyMap(Map<String,String> data){
+        Gson gson = new Gson();
+        return gson.toJson(data);
+    }
+
     /**
      * Helper function to perform POST and GET requests to Duolingo's API
      *
@@ -215,12 +225,23 @@ public class DuoApi {
         JsonObject object;
         try {
             if (data != null) {
-                Connection connection = Jsoup.connect(url).data(data).cookies(cookies).userAgent("chrome").ignoreContentType(true);
 
-                object = parser.parse(connection.post().body().text()).getAsJsonObject();
+
+                Connection connection = Jsoup.connect(url)
+                        .header("Accept","*/*")
+                        .method(Connection.Method.POST)
+                        .requestBody(jsonifyMap(data))
+                        .ignoreHttpErrors(true)
+                        .ignoreContentType(true)
+                        .maxBodySize(Integer.MAX_VALUE)
+                        .cookies(cookies)
+                        .header("Content-Type", "application/json");
+
+                String toParse = connection.post().body().text();
+                object = parser.parse(toParse).getAsJsonObject();
 
                 Connection.Response response = connection.execute();
-                //cookies = response.cookies();
+                cookies = response.cookies();
 
             } else {
                 String raw = Jsoup.connect(url).ignoreContentType(true).cookies(cookies).execute().body();
@@ -240,8 +261,9 @@ public class DuoApi {
      * the current user
      */
     private boolean getData() {
+        login();
         this.userData = getUserData();
-        return login();
+        return true;
     }
 
     /**

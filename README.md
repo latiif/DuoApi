@@ -9,9 +9,9 @@ Unofficial Java API for Duolingo
 This project was started in 2017. 
 Throughout the years, Duolingo changed their API significantly, rendering older versions of the code useless.
 
-One of the new changes is the utilization of [`jwt`](https://jwt.io/) for authentication. Notice that the one currently used in `DuoApi.java` might be expired when you use it.
+One of the new changes is the utilization of [`jwt`](https://jwt.io/) for authentication.
 
-I'll try to update it regularly. However it seems a `jwt` token can be used to access data accross many users.
+One other thing, is the introduction of a new endpoint for signing in. Work is currently focused on making sure all previous functionality is still compatible with the new updates to the api.
 
 ## DuolingoProfileInfo
 New wrapper dataclass for information extracted from the `DuoApi` class.

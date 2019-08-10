@@ -607,16 +607,4 @@ public class DuoApi {
     }
 
 
-    private class MyDto {
-
-        Map<String, String> headers;
-        Map<String, String> args;
-        String origin;
-        String url;
-    }
-
-
-    private void initCookies() {
-        cookies.put("jwt_token", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjYzMDcyMDAwMDAsImlhdCI6MCwic3ViIjoxODAwOTgyNDl9.6zB727F3HKwXzO3cK2mb8SlKeDYT4XPM2Ot1UZEpY0Y");
-    }
 }

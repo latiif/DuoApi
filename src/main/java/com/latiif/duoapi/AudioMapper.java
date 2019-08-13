@@ -5,23 +5,44 @@ package com.latiif.duoapi;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author latiif
+ * Singleton class to fetch url of the audio file for a word
+ */
 public class AudioMapper {
 
     private static AudioMapper INSTANCE = null;
 
     private final Map<String, String> mapping;
 
+    /**
+     * Checks whether there is audio support for a language
+     *
+     * @param langAbbr abbreviation of a language
+     * @return true if support exists and false otherwise
+     */
     public boolean isValidLanguage(String langAbbr) {
         return mapping.containsKey(langAbbr.toLowerCase());
     }
 
-    public String getAudioUrl(String word, String langAbbr) throws IllegalArgumentException{
-        if (!isValidLanguage(langAbbr)){
-            throw new IllegalArgumentException("No audio support for language "+ langAbbr);
+    /**
+     * Fetches and formats url for the audio file for a given word in a given language
+     *
+     * @param word     word to fetch url for
+     * @param langAbbr the language of the word
+     * @return url to the audio file containing pronounciation of word in langAbbr
+     * @throws IllegalArgumentException if specified language has no support for audio
+     */
+    public String getAudioUrl(String word, String langAbbr) throws IllegalArgumentException {
+        if (!isValidLanguage(langAbbr)) {
+            throw new IllegalArgumentException("No audio support for language " + langAbbr);
         }
         return String.format(mapping.get(langAbbr), word);
     }
 
+    /**
+     * Mapping between supported languages and their url template
+     */
     private AudioMapper() {
         mapping = new HashMap<>();
 

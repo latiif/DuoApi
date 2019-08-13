@@ -7,13 +7,16 @@ package com.latiif.duoapi;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import lombok.Getter;
 
 /**
- *
  * @author latiif
+ * Dataclass representing common user information as a POJO
+ * retrieved from a user's Duolingo profile
  */
 public class DuolingoProfileInfo {
 

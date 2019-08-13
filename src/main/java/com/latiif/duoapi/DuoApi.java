@@ -33,7 +33,7 @@ public class DuoApi {
     private String password;
     private String word_url_template = "%stts/%s/token/%s";
 
-    private Boolean isLoggedIn;
+    private Boolean isLoggedIn = false;
 
     private Map<String, String> cookies = new HashMap<String, String>();
 
@@ -48,7 +48,7 @@ public class DuoApi {
      * @param username username used to sign in to Duolingo
      * @param password password in string format
      */
-    public DuoApi(String username, String password) {
+    public DuoApi(String username, String password)  {
         this.username = username;
         this.password = password;
 
@@ -56,15 +56,14 @@ public class DuoApi {
 
         if (password != null) {
             isLoggedIn = getData();
-            isLoggedIn = true;
         }
 
-        userData = getUserData();
-
-       // initCookies();
-
+        if (isLoggedIn) {
+            userData = getUserData();
+        }
 
     }
+
 
     public boolean getIsLoggedIn() {
         return isLoggedIn;
@@ -120,8 +119,14 @@ public class DuoApi {
      * Switches the current course of the user. Useful for other functionality
      *
      * @param languageAbbr the abbreviation of the language to switch to
+     * @throws IllegalStateException if user is not logged in
      */
-    public void switchLanguage(String languageAbbr) {
+    public void switchLanguage(String languageAbbr) throws IllegalStateException {
+
+        if (!isLoggedIn) {
+            throw new IllegalStateException("Action requires logging in.");
+        }
+
         Map<String, String> data = new HashMap<String, String>();
         data.put("learning_language", languageAbbr);
         String url = "https://www.duolingo.com/switch_language";
@@ -207,7 +212,7 @@ public class DuoApi {
     }
 
 
-    private String jsonifyMap(Map<String,String> data){
+    private String jsonifyMap(Map<String, String> data) {
         Gson gson = new Gson();
         return gson.toJson(data);
     }
@@ -228,7 +233,7 @@ public class DuoApi {
 
 
                 Connection connection = Jsoup.connect(url)
-                        .header("Accept","*/*")
+                        .header("Accept", "*/*")
                         .method(Connection.Method.POST)
                         .requestBody(jsonifyMap(data))
                         .ignoreHttpErrors(true)
@@ -261,7 +266,10 @@ public class DuoApi {
      * the current user
      */
     private boolean getData() {
-        login();
+        boolean successful = login();
+        if (!successful) {
+            return false;
+        }
         this.userData = getUserData();
         return true;
     }

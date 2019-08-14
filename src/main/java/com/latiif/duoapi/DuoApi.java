@@ -104,7 +104,7 @@ public class DuoApi {
         JsonObject res = makeRequest(loginUrl, data);
         try {
             if (res != null) {
-                if (res.get("response").getAsString().equals("OK")) {
+                if (!res.entrySet().isEmpty()) {
                     return true;
                 }
             }

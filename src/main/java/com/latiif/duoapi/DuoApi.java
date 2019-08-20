@@ -1,24 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.latiif.duoapi;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
-
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -35,9 +27,10 @@ public class DuoApi {
 
     private Boolean isLoggedIn = false;
 
-    private Map<String, String> cookies = new HashMap<String, String>();
 
     private JsonObject userData;
+
+    private IDuoRequest duoRequest;
 
     private String userUrl = "https://duolingo.com/users/%s";
 
@@ -48,20 +41,17 @@ public class DuoApi {
      * @param username username used to sign in to Duolingo
      * @param password password in string format
      */
-    public DuoApi(String username, String password)  {
+    public DuoApi(IDuoRequest duoRequest,String username, String password)  {
+        this.duoRequest = duoRequest;
+
         this.username = username;
         this.password = password;
 
         userUrl = String.format(userUrl, username);
 
-        if (password != null) {
-            isLoggedIn = getData();
+        if (password == null || !getData()) {
+            throw new IllegalArgumentException("Incorrect username or password");
         }
-
-        if (isLoggedIn) {
-            userData = getUserData();
-        }
-
     }
 
 
@@ -143,7 +133,15 @@ public class DuoApi {
         String raw = "{}";
 
         try {
-            raw = new String(Jsoup.connect(userUrl).ignoreContentType(true).cookies(cookies).maxBodySize(Integer.MAX_VALUE).method(Connection.Method.GET).execute().body());
+            raw =
+                    Jsoup
+                    .connect(userUrl)
+                    .ignoreContentType(true)
+                    .cookies(duoRequest.getCookies())
+                    .maxBodySize(Integer.MAX_VALUE)
+                    .method(Connection.Method.GET)
+                    .execute().body();
+
         } catch (Exception ex) {
             Logger.getLogger(DuoApi.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -190,32 +188,6 @@ public class DuoApi {
         return getDict(Arrays.asList("notify_comment", "deactivated", "is_following"), userData);
     }
 
-    /*
-    No longer supported by Duolingo
-     */
-    public JsonObject getActivityStream(String before) {
-        String url;
-        if (before != null) {
-            url = "https://www.duolingo.com/stream/%s?before=%s";
-            url = String.format(url, this.username, before);
-        } else {
-            url = "https://www.duolingo.com/activity/%s";
-            url = String.format(url, this.username);
-        }
-        JsonObject res = makeRequest(url, null);
-
-        if (res != null) {
-            return res;
-        }
-
-        return null;
-    }
-
-
-    private String jsonifyMap(Map<String, String> data) {
-        Gson gson = new Gson();
-        return gson.toJson(data);
-    }
 
     /**
      * Helper function to perform POST and GET requests to Duolingo's API
@@ -225,40 +197,7 @@ public class DuoApi {
      * @return Raw JSON object from the requested URL
      */
     private JsonObject makeRequest(String url, Map<String, String> data) {
-
-        JsonParser parser = new JsonParser();
-        JsonObject object;
-        try {
-            if (data != null) {
-
-
-                Connection connection = Jsoup.connect(url)
-                        .header("Accept", "*/*")
-                        .method(Connection.Method.POST)
-                        .requestBody(jsonifyMap(data))
-                        .ignoreHttpErrors(true)
-                        .ignoreContentType(true)
-                        .maxBodySize(Integer.MAX_VALUE)
-                        .cookies(cookies)
-                        .header("Content-Type", "application/json");
-
-                String toParse = connection.post().body().text();
-                object = parser.parse(toParse).getAsJsonObject();
-
-                Connection.Response response = connection.execute();
-                cookies = response.cookies();
-
-            } else {
-                String raw = Jsoup.connect(url).ignoreContentType(true).cookies(cookies).execute().body();
-                object = parser.parse(raw).getAsJsonObject();
-            }
-            return object;
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
-
-        return null;
+        return duoRequest.makeRequest(url,data);
     }
 
     /**

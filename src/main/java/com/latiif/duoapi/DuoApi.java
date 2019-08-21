@@ -1,17 +1,11 @@
 package com.latiif.duoapi;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.stream.JsonReader;
-import java.io.StringReader;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,14 +19,14 @@ public class DuoApi {
     private String password;
     private String word_url_template = "%stts/%s/token/%s";
 
-    private Boolean isLoggedIn = false;
+    private Boolean isLoggedIn;
 
 
     private JsonObject userData;
 
     private IDuoRequest duoRequest;
 
-    private String userUrl = "https://duolingo.com/users/%s";
+
 
     /**
      * Initializes the class for further functionality sanctioned by auth
@@ -47,11 +41,13 @@ public class DuoApi {
         this.username = username;
         this.password = password;
 
-        userUrl = String.format(userUrl, username);
+        duoRequest.setUserCredentials(username,password);
 
         if (password == null || !getData()) {
             throw new IllegalArgumentException("Incorrect username or password");
         }
+
+        isLoggedIn = true;
     }
 
 
@@ -88,7 +84,7 @@ public class DuoApi {
      */
     private boolean login() {
         String loginUrl = "https://www.duolingo.com/2017-06-30/login";
-        Map<String, String> data = new HashMap<String, String>();
+        Map<String, String> data = new HashMap<>();
         data.put("identifier", this.username);
         data.put("password", this.password);
         JsonObject res = makeRequest(loginUrl, data);
@@ -117,7 +113,7 @@ public class DuoApi {
             throw new IllegalStateException("Action requires logging in.");
         }
 
-        Map<String, String> data = new HashMap<String, String>();
+        Map<String, String> data = new HashMap<>();
         data.put("learning_language", languageAbbr);
         String url = "https://www.duolingo.com/switch_language";
 
@@ -125,34 +121,6 @@ public class DuoApi {
         getData();
     }
 
-    /**
-     * @return A raw json representation of the user data
-     */
-    public JsonObject getUserData() {
-
-        String raw = "{}";
-
-        try {
-            raw =
-                    Jsoup
-                    .connect(userUrl)
-                    .ignoreContentType(true)
-                    .cookies(duoRequest.getCookies())
-                    .maxBodySize(Integer.MAX_VALUE)
-                    .method(Connection.Method.GET)
-                    .execute().body();
-
-        } catch (Exception ex) {
-            Logger.getLogger(DuoApi.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        Gson gson = new Gson();
-        JsonReader reader = new JsonReader(new StringReader(raw));
-        reader.setLenient(true);
-
-        return gson.fromJson(reader, JsonObject.class);
-
-    }
 
     /**
      * Helper function to retrieve certain key-value pairs from a json object
@@ -163,7 +131,7 @@ public class DuoApi {
      */
     private Map<String, String> getDict(List<String> keys, JsonObject object) {
 
-        Map<String, String> res = new HashMap<String, String>();
+        Map<String, String> res = new HashMap<>();
 
         for (String key : keys) {
             if (object.get(key) != null) {
@@ -209,7 +177,7 @@ public class DuoApi {
         if (!successful) {
             return false;
         }
-        this.userData = getUserData();
+        this.userData = duoRequest.getUserData();
         return true;
     }
 
@@ -219,7 +187,7 @@ public class DuoApi {
      * @param abbr the abbreviation to look up e.g. "EN"
      * @return Full language name, or an empty string
      */
-    public String getLanguageFromAbbreviataion(String abbr) {
+    public String getLanguageFromAbbreviation(String abbr) {
         for (JsonElement element : userData.getAsJsonArray("languages")) {
             if (element.getAsJsonObject().get("language").getAsString().equals(abbr)) {
                 return element.getAsJsonObject().get("language_string").getAsString();

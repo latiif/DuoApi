@@ -3,15 +3,28 @@ package com.latiif.duoapi;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DuoRequest implements IDuoRequest {
 
+    private String userUrl = "https://duolingo.com/users/%s";
+
+
+
     private Map<String, String> cookies = new HashMap<String, String>();
+
+    @Override
+    public void setUserCredentials(String username, String password) {
+        userUrl = String.format(userUrl, username);
+    }
 
     @Override
     public JsonObject makeRequest(String url, Map<String, String> data) {
@@ -46,6 +59,33 @@ public class DuoRequest implements IDuoRequest {
         }
 
         return null;
+    }
+
+    @Override
+    public JsonObject getUserData() {
+
+
+        String raw = "{}";
+
+        try {
+            raw =
+                    Jsoup
+                            .connect(userUrl)
+                            .ignoreContentType(true)
+                            .cookies(getCookies())
+                            .maxBodySize(Integer.MAX_VALUE)
+                            .method(Connection.Method.GET)
+                            .execute().body();
+
+        } catch (Exception ex) {
+            Logger.getLogger(DuoApi.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        Gson gson = new Gson();
+        JsonReader reader = new JsonReader(new StringReader(raw));
+        reader.setLenient(true);
+
+        return gson.fromJson(reader, JsonObject.class);
     }
 
     @Override

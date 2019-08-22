@@ -27,7 +27,7 @@ First, add the repo
 </repositories>
 ```
 Then, add the dependency
-```$xslt
+```xml
 <dependency>
     <groupId>com.github.llusx</groupId>
     <artifactId>DuoApi</artifactId>

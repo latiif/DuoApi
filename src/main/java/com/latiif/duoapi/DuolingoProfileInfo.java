@@ -67,7 +67,7 @@ public class DuolingoProfileInfo {
     }
 
     private List<String> getLanguages(boolean inAbbr, JsonObject userData) {
-        List<String> res = new ArrayList<String>();
+        List<String> res = new ArrayList<>();
         if (userData != null) {
             for (JsonElement element : userData.getAsJsonArray("languages")) {
                 if (element.getAsJsonObject().get("learning").getAsBoolean()) {

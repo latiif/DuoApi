@@ -27,7 +27,6 @@ public class DuoApi {
     private IDuoRequest duoRequest;
 
 
-
     /**
      * Initializes the class for further functionality sanctioned by auth
      * cookies
@@ -35,13 +34,13 @@ public class DuoApi {
      * @param username username used to sign in to Duolingo
      * @param password password in string format
      */
-    public DuoApi(IDuoRequest duoRequest,String username, String password)  {
+    public DuoApi(IDuoRequest duoRequest, String username, String password) {
         this.duoRequest = duoRequest;
 
         this.username = username;
         this.password = password;
 
-        duoRequest.setUserCredentials(username,password);
+        duoRequest.setUserCredentials(username, password);
 
         if (password == null || !getData()) {
             throw new IllegalArgumentException("Incorrect username or password");
@@ -137,8 +136,7 @@ public class DuoApi {
             if (object.get(key) != null) {
                 try {
                     res.put(key, object.get(key).getAsString());
-                } catch (Exception e) {
-                    continue;
+                } catch (Exception ignored) {
                 }
 
             }
@@ -165,7 +163,7 @@ public class DuoApi {
      * @return Raw JSON object from the requested URL
      */
     private JsonObject makeRequest(String url, Map<String, String> data) {
-        return duoRequest.makeRequest(url,data);
+        return duoRequest.makeRequest(url, data);
     }
 
     /**
@@ -215,8 +213,8 @@ public class DuoApi {
     }
 
     /**
-     * @param language
-     * @return
+     * @param language to retrieve information about
+     * @return JsonObject containing relevant information about the language
      */
     public JsonObject getLanguageDetails(String language) {
         for (JsonElement element : userData.getAsJsonArray("languages")) {
@@ -227,6 +225,9 @@ public class DuoApi {
         return new JsonObject();
     }
 
+    /**
+     * @return A dictionary of most relevant information about the user
+     */
     public Map<String, String> getUserInfo() {
         return getDict(Arrays.asList("username", "bio", "id", "num_following", "cohort",
                 "language_data", "num_followers", "learning_language_string",
@@ -239,16 +240,28 @@ public class DuoApi {
         return getDict(Arrays.asList("daily_goal", "site_streak", "streak_extended_today"), userData);
     }
 
+    /**
+     *
+     * @param abbr Abbreviation of a language
+     * @return boolean representing whether @abbr is the current language
+     */
     public boolean isCurrentLanguage(String abbr) {
         return getCurrentLanguage().toLowerCase().equals(abbr.toLowerCase());
     }
 
+    /**
+     *
+     * @return Abbreviation of the current language
+     */
     public String getCurrentLanguage() {
-
         return String.valueOf(userData.get("language_data").getAsJsonObject().keySet().toArray()[0]);
-
     }
 
+    /**
+     *
+     * @param abbr Abbreviation of a language
+     * @return A dictionary of relevant information about language @abbr
+     */
     public Map<String, String> getLanguageProgress(String abbr) {
         if (!isCurrentLanguage(abbr)) {
             switchLanguage(abbr);
@@ -273,6 +286,10 @@ public class DuoApi {
         return res;
     }
 
+    /**
+     *
+     * @return A list of known words in the current language
+     */
     public List<String> getKnownWords() {
         List<String> res = new ArrayList<String>();
 
@@ -298,6 +315,11 @@ public class DuoApi {
         return res;
     }
 
+    /**
+     * Switches language to @abbr and returns list of known words in that language
+     * @param abbr Abbreviation of language
+     * @return List of known words in language @abbr
+     */
     public List<String> getKnownWords(String abbr) {
         if (isCurrentLanguage(abbr)) {
             return getKnownWords();
@@ -487,6 +509,7 @@ public class DuoApi {
      *
      * @param word the word to lookup in the current language of the user
      * @return url of audio clip for the requested word in the current language
+     * @deprecated Use AudioMapper instead
      */
     public String getWordAudio(String word) {
         String res;
@@ -514,7 +537,7 @@ public class DuoApi {
     /**
      * Extracts useful profile information from user
      *
-     * @return an instnace of DuollingoProfileInfo
+     * @return an instance of DuolingoProfileInfo
      * @see DuolingoProfileInfo
      */
     public DuolingoProfileInfo getProfileInfo() {

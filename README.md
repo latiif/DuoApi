@@ -1,6 +1,6 @@
 # DuoApi
-[![](https://img.shields.io/github/languages/top/llusx/DuoApi.svg)]()
-[![](https://img.shields.io/github/last-commit/llusx/DuoApi)]()
+[![](https://img.shields.io/github/languages/top/latiif/DuoApi.svg)]()
+[![](https://img.shields.io/github/last-commit/latiif/DuoApi)]()
 [![](https://img.shields.io/maintenance/yes/2019)]()
 
 

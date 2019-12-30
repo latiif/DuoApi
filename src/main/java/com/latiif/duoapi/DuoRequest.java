@@ -16,9 +16,6 @@ import java.util.logging.Logger;
 public class DuoRequest implements IDuoRequest {
 
     private String userUrl = "https://duolingo.com/users/%s";
-
-
-
     private Map<String, String> cookies = new HashMap<String, String>();
 
     @Override
@@ -63,10 +60,7 @@ public class DuoRequest implements IDuoRequest {
 
     @Override
     public JsonObject getUserData() {
-
-
         String raw = "{}";
-
         try {
             raw =
                     Jsoup

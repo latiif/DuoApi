@@ -26,7 +26,4 @@ public class DuoApiTest {
         // User should be logged in
         assertTrue(duoApi.getIsLoggedIn());
     }
-
-
-
 }

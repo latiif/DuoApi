@@ -49,6 +49,9 @@ public class DuoApi {
         isLoggedIn = true;
     }
 
+    public DuoApi(String username, String password){
+        this(new DuoRequest(),username,password);
+    }
 
     public boolean getIsLoggedIn() {
         return isLoggedIn;

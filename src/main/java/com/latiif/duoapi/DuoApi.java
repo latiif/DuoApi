@@ -119,7 +119,7 @@ public class DuoApi {
         data.put("learning_language", languageAbbr);
         String url = "https://www.duolingo.com/switch_language";
 
-        JsonObject res = makeRequest(url, data);
+        makeRequest(url, data);
         getData();
     }
 

@@ -1,5 +1,4 @@
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.latiif.duoapi.IDuoRequest;
 
 import java.util.Map;

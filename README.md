@@ -9,7 +9,8 @@ Unofficial Java API for Duolingo
 ---
 
 This project was started in 2017.
-Throughout the years, Duolingo changed their API significantly, rendering older versions of the code useless.
+**Most of the relevant functionality still works.**
+Throughout the years, Duolingo changed their API significantly, rendering some older versions of the code useless.
 
 ## Get it
 

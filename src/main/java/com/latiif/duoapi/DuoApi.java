@@ -269,10 +269,18 @@ public class DuoApi {
         if (!isCurrentLanguage(abbr)) {
             switchLanguage(abbr);
         }
-        return getDict(Arrays.asList("streak", "language_string", "level_progress",
-                "num_skills_learned", "level_percent", "level_points",
-                "points_rank", "next_level", "level_left", "language",
-                "points", "fluency_score", "level"), userData);
+
+        JsonObject currentLanguageData = userData.get("language_data").getAsJsonObject().get(getCurrentLanguage())
+                .getAsJsonObject();
+        JsonArray skills = currentLanguageData.get("skills").getAsJsonArray();
+        int numSkillsLearned = currentLanguageData.get("num_skills_learned").getAsInt();
+        boolean completed = numSkillsLearned >= skills.size();
+
+        Map<String, String> progressDict = getDict(Arrays.asList("streak", "language_string", "level_progress",
+                "num_skills_learned", "level_percent", "level_points", "points_rank", "next_level", "level_left",
+                "language", "points", "fluency_score", "level"), currentLanguageData);
+        progressDict.put("completed", Boolean.toString(completed));
+        return progressDict;
     }
 
     public List<Map<String, String>> getFriends() {

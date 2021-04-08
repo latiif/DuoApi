@@ -9,7 +9,7 @@ public class DuoApiTest {
     public void authTestFail() {
         // Testing with wrong password
         try {
-            DuoApi duoApi = new DuoApi(new DuoRequest(), "llusx", "wrongpassword");
+            new DuoApi(new DuoRequest(), "llusx", "wrongpassword");
         }
         catch (IllegalArgumentException e){
             // User shouldn't be logged in

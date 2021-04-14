@@ -283,6 +283,23 @@ public class DuoApi {
         return progressDict;
     }
 
+    /**
+     *
+     * @return list of completed courses as language abbreviations (may take a while)
+     */
+    public List<String> getFinishedCourses() {
+        List<String> finishedCourses = new LinkedList<>();
+        String currentLanguage = this.getCurrentLanguage();
+        for (String languageAbbr : this.getLanguages(true)) {
+            Map<String, String> progress = getLanguageProgress(languageAbbr);
+            if (progress.get("completed").equals(Boolean.toString(true))) {
+                finishedCourses.add(languageAbbr);
+            }
+        }
+        switchLanguage(currentLanguage);
+        return finishedCourses;
+    }
+
     public List<Map<String, String>> getFriends() {
 
         JsonArray points_ranking_data = userData.get("language_data").getAsJsonObject().get(getCurrentLanguage()).getAsJsonObject().get("points_ranking_data").getAsJsonArray();
